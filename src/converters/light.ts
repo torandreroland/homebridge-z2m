@@ -318,10 +318,7 @@ class LightHandler implements ServiceHandler {
       this.monitors.push(new PassthroughCharacteristicMonitor(this.colorTempExpose.property, service, hap.Characteristic.ColorTemperature));
 
       // Also supports colors?
-      if (
-        this.colorTempExpose !== undefined &&
-        this.colorExpose !== undefined
-      ) {
+      if (this.colorTempExpose !== undefined && this.colorExpose !== undefined) {
         // Add monitor to convert Color Temperature to Hue / Saturation
         // based on the 'color_mode'
         this.monitors.push(new ColorTemperatureToHueSatMonitor(service, this.colorTempExpose.property));
