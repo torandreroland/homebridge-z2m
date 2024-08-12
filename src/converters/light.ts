@@ -27,7 +27,6 @@ import {
   PassthroughCharacteristicMonitor,
 } from './monitor';
 import { convertHueSatToXy, convertMiredColorTemperatureToHueSat, convertXyToHueSat } from '../colorhelper';
-import { EXP_COLOR_MODE } from '../experimental';
 
 interface AdaptiveLightingConfig {
   only_when_on?: boolean;
@@ -207,16 +206,14 @@ class LightHandler implements ServiceHandler {
 
       // Use color_mode to filter out the non-active color information
       // to prevent "incorrect" updates (leading to "glitches" in the Home.app)
-      if (this.accessory.isExperimentalFeatureEnabled(EXP_COLOR_MODE)) {
-        if (this.colorTempExpose !== undefined && this.colorTempExpose.property in state && !colorModeIsTemperature) {
-          // Color mode is NOT Color Temperature. Remove color temperature information.
-          delete state[this.colorTempExpose.property];
-        }
+      if (this.colorTempExpose !== undefined && this.colorTempExpose.property in state && !colorModeIsTemperature) {
+        // Color mode is NOT Color Temperature. Remove color temperature information.
+        delete state[this.colorTempExpose.property];
+      }
 
-        if (this.colorExpose?.property !== undefined && this.colorExpose.property in state && colorModeIsTemperature) {
-          // Color mode is Color Temperature. Remove HS/XY color information.
-          delete state[this.colorExpose.property];
-        }
+      if (this.colorExpose?.property !== undefined && this.colorExpose.property in state && colorModeIsTemperature) {
+        // Color mode is Color Temperature. Remove HS/XY color information.
+        delete state[this.colorExpose.property];
       }
     }
 
@@ -306,14 +303,15 @@ class LightHandler implements ServiceHandler {
     ) as ExposesEntryWithNumericRangeProperty;
     if (this.colorTempExpose !== undefined) {
       const characteristic = getOrAddCharacteristic(service, hap.Characteristic.ColorTemperature);
+
+      // Set default value to average of min/max, before configuring min/max
+      characteristic.value = Math.round((this.colorTempExpose.value_min + this.colorTempExpose.value_max) / 2);
+
       characteristic.setProps({
         minValue: this.colorTempExpose.value_min,
         maxValue: this.colorTempExpose.value_max,
         minStep: 1,
       });
-
-      // Set default value
-      characteristic.value = this.colorTempExpose.value_min;
 
       characteristic.on('set', this.handleSetColorTemperature.bind(this));
 
@@ -321,7 +319,6 @@ class LightHandler implements ServiceHandler {
 
       // Also supports colors?
       if (
-        this.accessory.isExperimentalFeatureEnabled(EXP_COLOR_MODE) &&
         this.colorTempExpose !== undefined &&
         this.colorExpose !== undefined
       ) {
