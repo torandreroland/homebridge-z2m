@@ -14,7 +14,7 @@ Since version 1.0.0, we try to follow the [Semantic Versioning](https://semver.o
 ### Fixed
 
 - Minor changes to be compatible with the upcoming Homebridge v2 release, amongst others:
-  - In Light accessory, set default value before configuring min/max values.
+  - In most services where the (numeric) range of a characteristic is limited, the value is now set correctly before doing so, to prevent warnings from HAP-NodeJS.
   - Sanitize accessory names so they only contain alphanumeric, space, and apostrophe characters, and start with an alphanumeric character.
 
 ## [1.11.0-beta.6] - 2024-06-30
